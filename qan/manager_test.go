@@ -32,6 +32,7 @@ import (
 	"github.com/percona/qan-agent/qan"
 	"github.com/percona/qan-agent/test"
 	"github.com/percona/qan-agent/test/mock"
+	"github.com/stretchr/testify/assert"
 	. "gopkg.in/check.v1"
 )
 
@@ -208,15 +209,6 @@ func (s *ManagerTestSuite) TestStartWithConfig(t *C) {
 			MaxSlowLogSize: 100,  // specify optional args
 			ExampleQueries: true, // specify optional args
 			ReportLimit:    200,  // specify optional args
-			Start: []string{
-				"SET GLOBAL slow_query_log=OFF",
-				"SET GLOBAL long_query_time=0.456",
-				"SET GLOBAL slow_query_log=ON",
-			},
-			Stop: []string{
-				"SET GLOBAL slow_query_log=OFF",
-				"SET GLOBAL long_query_time=10",
-			},
 		}
 		err := pct.Basedir.WriteConfig("qan-"+mysqlInstance.UUID, &config)
 		t.Assert(err, IsNil)
@@ -247,7 +239,7 @@ func (s *ManagerTestSuite) TestStartWithConfig(t *C) {
 		t.Check(f.Args, HasLen, 2)
 
 		argConfigs := []pc.QAN{f.Args[0].Config, f.Args[1].Config}
-		t.Check(argConfigs, DeepEquals, configs)
+		assert.Equal(t, configs, argConfigs)
 		t.Check(f.Args[0].Name, Equals, "qan-analyzer-22200000")
 		t.Check(f.Args[1].Name, Equals, "qan-analyzer-31300000")
 	}
@@ -307,15 +299,6 @@ func (s *ManagerTestSuite) TestStart2RemoteQAN(t *C) {
 			MaxSlowLogSize: 100,  // specify optional args
 			ExampleQueries: true, // specify optional args
 			ReportLimit:    200,  // specify optional args
-			Start: []string{
-				"SET GLOBAL slow_query_log=OFF",
-				"SET GLOBAL long_query_time=0.456",
-				"SET GLOBAL slow_query_log=ON",
-			},
-			Stop: []string{
-				"SET GLOBAL slow_query_log=OFF",
-				"SET GLOBAL long_query_time=10",
-			},
 		}
 		err := pct.Basedir.WriteConfig("qan-"+mysqlInstance.UUID, &config)
 		t.Assert(err, IsNil)
@@ -346,7 +329,7 @@ func (s *ManagerTestSuite) TestStart2RemoteQAN(t *C) {
 		t.Check(f.Args, HasLen, 2)
 
 		argConfigs := []pc.QAN{f.Args[0].Config, f.Args[1].Config}
-		t.Check(argConfigs, DeepEquals, configs)
+		assert.Equal(t, configs, argConfigs)
 		t.Check(f.Args[0].Name, Equals, "qan-analyzer-22200000")
 		t.Check(f.Args[1].Name, Equals, "qan-analyzer-31300000")
 	}
@@ -449,13 +432,12 @@ func (s *ManagerTestSuite) TestValidateConfig(t *C) {
 	mysqlUUID := mysqlInstances[0].UUID
 
 	config := pc.QAN{
-		UUID:              mysqlUUID,
-		Interval:          300,        // 5 min
-		MaxSlowLogSize:    1073741824, // 1 GiB
-		RemoveOldSlowLogs: true,
-		ExampleQueries:    true,
-		WorkerRunTime:     600, // 10 min
-		CollectFrom:       "slowlog",
+		UUID:           mysqlUUID,
+		Interval:       300,        // 5 min
+		MaxSlowLogSize: 1073741824, // 1 GiB
+		ExampleQueries: true,
+		WorkerRunTime:  600, // 10 min
+		CollectFrom:    "slowlog",
 	}
 	_, err := qan.ValidateConfig(config)
 	t.Check(err, IsNil)
