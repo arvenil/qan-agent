@@ -57,6 +57,9 @@ var _ = Suite(&WorkerTestSuite{})
 
 func (s *WorkerTestSuite) SetUpSuite(t *C) {
 	s.dsn = os.Getenv("PCT_TEST_MYSQL_DSN")
+	if s.dsn == "" {
+		t.Fatal("PCT_TEST_MYSQL_DSN is not set")
+	}
 	s.mysqlConn = mysql.NewConnection(s.dsn)
 	if err := s.mysqlConn.Connect(); err != nil {
 		t.Fatal(err)
